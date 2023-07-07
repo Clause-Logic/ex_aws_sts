@@ -15,6 +15,7 @@ defmodule ExAws.STS do
           | {:token_code, binary}
           | {:external_id, binary}
           | {:policy, policy}
+          | {:tags, map}
 
   @doc """
   Assume Role.
@@ -165,6 +166,13 @@ defmodule ExAws.STS do
   defp parse_opt(opts, {:provider_id, val}), do: Map.put(opts, "ProviderId", val)
   defp parse_opt(opts, {:external_id, val}), do: Map.put(opts, "ExternalId", val)
   defp parse_opt(opts, {:policy, val}), do: Map.put(opts, "Policy", json_codec().encode!(val))
+
+  defp parse_opt(opts, {:tags, val}),
+    do:
+      Map.to_list(val)
+      |> Enum.reduce("", fn {k, v}, acc -> acc <> "#{k}=#{v}," end)
+      |> String.trim_trailing(",")
+      |> then(&Map.put(opts, "Tags", &1))
 
   defp json_codec(), do: ExAws.Config.build_base(:sts) |> Map.get(:json_codec)
 end

@@ -170,9 +170,10 @@ defmodule ExAws.STS do
   defp parse_opt(opts, {:tags, val}),
     do:
       Map.to_list(val)
-      |> Enum.reduce("", fn {k, v}, acc -> acc <> "#{k}=#{v}," end)
-      |> String.trim_trailing(",")
-      |> then(&Map.put(opts, "Tags", &1))
+      |> Enum.with_index()
+      |> Enum.reduce(opts, fn {{k, v}, i}, acc ->
+        Map.put(acc, "Tags.member.#{i + 1}.Key", k) |> Map.put("Tags.member.#{i + 1}.Value", v)
+      end)
 
   defp json_codec(), do: ExAws.Config.build_base(:sts) |> Map.get(:json_codec)
 end
